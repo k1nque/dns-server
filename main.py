@@ -9,7 +9,7 @@ sock.bind((ip, port))
 
 def load_zones():
     json_zone = {}
-    zone_files = glob.zones("zones/*.zone")
+    zone_files = glob.glob("zones/*.zone")
 
     for zone in zone_files:
         with open(zone) as zonedata:
