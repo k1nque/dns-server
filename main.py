@@ -1,5 +1,6 @@
 import json
-import socket, glob
+import socket
+import glob
 
 port = 53
 ip = "127.0.0.1"
@@ -38,8 +39,8 @@ def parse_flags(flags):
     RA = '0'
     Z = '000'
     RCODE = '0000'
-    return int(QR + OPCODE + AA + TC + RD + RCODE).to_bytes(1, byteorder='big') + int(RA + Z + RCODE).to_bytes(1,
-                                                                                                               byteorder='big')
+    return int(QR + OPCODE + AA + TC + RD, 2).to_bytes(1, byteorder='big') \
+           + int(RA + Z + RCODE, 2).to_bytes(1, byteorder='big')
 
 
 def get_question_domain(data):
@@ -83,7 +84,7 @@ def get_recs(domain, question_type):
         qt = 'a'
 
     zone = get_zone(domain)
-
+    print(zone)
     return zone, qt, domain
 
 
