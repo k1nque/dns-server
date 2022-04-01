@@ -1,6 +1,7 @@
 import json
 import socket
 import glob
+import dnsResolver
 
 port = 53
 ip = "127.0.0.1"
@@ -12,7 +13,7 @@ sock.bind((ip, port))
 def load_zones():
     json_zone = dict()
     zone_files = glob.glob("zones/*.zone")
-    # print(zone_files)
+
     for zone in zone_files:
         with open(zone) as zonedata:
             data = json.load(zonedata)
@@ -27,8 +28,6 @@ zone_data = load_zones()
 
 def parse_flags(flags):
     fs_byte = bytes(flags[:1])
-
-    rflags = ""
 
     QR = '1'
     OPCODE = ''
@@ -69,18 +68,13 @@ def get_question_domain(data):
             state = True
             expected_length = byte
         qti += 1
-        # print(qti)
-    # print(domain_parts)
-    # print(data[qti:qti + 2])
-    # print(data)
-    # print(qti)
-    return '.'.join(domain_parts[:-1]) + '.', data[qti:qti + 2]
+
+    return domain_parts, data[qti:qti + 2]
 
 
 def get_zone(domain):
     global zone_data
-    zone_name = domain
-    # print(zone_data)
+    zone_name = '.'.join(domain)
     return zone_data[zone_name]
 
 
@@ -91,7 +85,7 @@ def get_recs(data):
         qt = 'a'
 
     zone = get_zone(domain)
-    # print(zone, qt, domain)
+
     return zone[qt], qt, domain
 
 
@@ -113,7 +107,7 @@ def build_question(domain_parts, rectype):
     return qbytes
 
 
-def rec2bytes(domain_name, rectype, recttl, recvalue):
+def rec2bytes(rectype, recttl, recvalue):
     rbytes = b'\xc0\x0c'
 
     if rectype == 'a':
@@ -157,7 +151,7 @@ def build_response(data):
     dns_question = build_question(domain_name, rectype)
 
     for record in records:
-        dns_body += rec2bytes(domain_name, rectype, record["ttl"], record["value"])
+        dns_body += rec2bytes(rectype, record["ttl"], record["value"])
 
     return dns_header + dns_question + dns_body
 
